@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Proyecto - Resultados
+salida/
+# Subir la imagen básica de prueba de momento está bien, pero si crece mucho deberíamos ignorarla.
+# entrada/
