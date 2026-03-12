@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retoque de Imagen IA</title>
+    <!-- Fabric.js para el canvas interactivo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; }
+        .container { display: flex; gap: 20px; }
+        .canvas-area { border: 2px solid #ccc; width: 600px; height: 400px; position: relative; }
+        .preview-area { border: 2px solid #333; width: 600px; height: 400px; }
+        img.result { max-width: 100%; max-height: 100%; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <h1>Retoque de Imagen interactivo</h1>
+    
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="procesarImagen()">Procesar Imagen</button>
+    
+    <div class="container">
+        <!-- Canvas Interactivo -->
+        <div>
+            <h3>1. Configura las áreas (Arrastra los cuadros)</h3>
+            <canvas id="c"></canvas>
+            <p>🔴 Rojo: Logo (Referencia) | 🔵 Azul: Máscara (Borrador) | 🟢 Verde: Cielo (Clon)</p>
+        </div>
+        
+        <!-- Previsualización -->
+        <div>
+            <h3>2. Resultado</h3>
+            <div class="preview-area" id="resultContainer">
+                <p>La imagen procesada aparecerá aquí...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = new fabric.Canvas('c', { selection: false });
+        // Dimensiones iniciales del lienzo, se ajustarán al cargar imagen
+        canvas.setWidth(600);
+        canvas.setHeight(400);
+
+        let imgInstance;
+        let fileObj;
+
+        // Variables para los objetos
+        let rectLogo, rectMask, rectCielo;
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            fileObj = file;
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(f) {
+                const data = f.target.result;
+                fabric.Image.fromURL(data, function(img) {
+                    canvas.clear();
+                    
+                    // Ajustar canvas al tamaño de imagen (escalado si es muy grande)
+                    const scale = Math.min(600 / img.width, 1); 
+                    const displayW = img.width * scale;
+                    const displayH = img.height * scale;
+                    
+                    canvas.setWidth(displayW);
+                    canvas.setHeight(displayH);
+                    
+                    img.scale(scale);
+                    img.selectable = false; // La imagen de fondo no se mueve
+                    canvas.add(img);
+                    imgInstance = img;
+
+                    // Añadir los cuadros interactivos
+                    // 1. Logo (Solo visual, rojo)
+                    rectLogo = new fabric.Rect({
+                        left: 100, top: 50, fill: 'rgba(255,0,0,0.3)', width: 100, height: 50,
+                        stroke: 'red', strokeWidth: 2, cornerColor: 'red'
+                    });
+                    
+                    // 2. Máscara (Lo que se borra, azul)
+                    rectMask = new fabric.Ellipse({
+                        left: 90, top: 40, rx: 60, ry: 35, fill: 'rgba(0,0,255,0.3)',
+                        stroke: 'blue', strokeWidth: 2
+                    });
+
+                    // 3. Cielo (Lo que se copia, verde)
+                    rectCielo = new fabric.Rect({
+                        left: 20, top: 50, fill: 'rgba(0,255,0,0.3)', width: 50, height: 50,
+                        stroke: 'green', strokeWidth: 2
+                    });
+
+                    canvas.add(rectLogo, rectMask, rectCielo);
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        async function procesarImagen() {
+            if (!fileObj) { alert("Carga una imagen primero"); return; }
+            
+            // Obtener coordenadas reales (des-escalando si el canvas redujo la imagen)
+            const scale = imgInstance.scaleX;
+            
+            function getCoords(obj) {
+                // Si es elipse, fabric usa rx/ry desde el centro, pero necesitamos bounding box
+                const bound = obj.getBoundingRect();
+                return {
+                    left: bound.left / scale,
+                    top: bound.top / scale,
+                    width: bound.width / scale,
+                    height: bound.height / scale
+                };
+            }
+
+            const data = {
+                mask: getCoords(rectMask),
+                cielo: getCoords(rectCielo)
+            };
+            
+            console.log("Enviando coordenadas:", data);
+
+            const formData = new FormData();
+            formData.append('file', fileObj); 
+            formData.append('coords', JSON.stringify(data)); // Enviamos JSON como string
+
+            try {
+                // Usamos la ruta relativa para que funcione tanto en localhost como en red local
+                const response = await fetch('/procesar', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    
+                    const resultContainer = document.getElementById('resultContainer');
+                    resultContainer.innerHTML = `<img src="${url}" class="result"> <br> <a href="${url}" download="imagen_limpia.jpg">Descargar Imagen</a>`;
+                } else {
+                    alert("Error en el servidor");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión");
+            }
+        }
+    </script>
+</body>
+</html>

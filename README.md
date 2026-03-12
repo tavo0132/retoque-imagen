@@ -1,34 +1,44 @@
-# Retoque de Imagen con Python 🖼️
+# Retoque de Imagen con Python + Web 🖼️
 
-Este script automatiza la eliminación de logos y marcas de agua en imágenes o collages. Utiliza la librería **Pillow** para detectar áreas específicas, aplicar máscaras difuminadas y clonar texturas de fondo (como el cielo) para rellenar el espacio eliminado de forma natural.
+Aplicación web interactiva para eliminar logos y marcas de agua en imágenes utilizando técnicas de enmascarado y clonación de texturas. Permite ajustar visualmente las áreas de borrado directamente en el navegador.
 
 ## 🚀 Características
-- **Detección Automática de Escala**: Se adapta a imágenes de diferentes resoluciones (1024px, 1632px, etc.) recalculando las coordenadas proporcionalmente.
-- **Enmascarado Suave**: Usa bordes difuminados (Gaussian Blur) para que no se noten los cortes.
-- **Historial de Ejecuciones**: Guarda cada resultado en carpetas organizadas por fecha y número de ejecución (ej. `salida/11-03-2026_1`).
-- **Modo Debug**: Genera una imagen `debug_areas.jpg` mostrando exactamente qué áreas se están borrando y clonando para facilitar ajustes.
+- **Interfaz Web Interactiva**: Ajusta visualmente el área del logo, la máscara de borrado y la zona de clonación (cielo) arrastrando cuadros sobre la imagen.
+- **Backend Potente (FastAPI)**: Procesa las imágenes en tiempo real utilizando Python y Pillow.
+- **Frontend Dinámico (Fabric.js)**: Lienzo interactivo html5 para manipulación fácil.
+- **Detección Automática de Escala**: El backend se adapta a la resolución real de la imagen.
+- **Enmascarado Suave**: Usa bordes difuminados (Gaussian Blur) para resultados naturales.
 
 ## 📋 Requisitos
 - Python 3.x
-- Librería Pillow
+- Librerías: `fastapi`, `uvicorn`, `python-multipart`, `Pillow`
 
 ```bash
-pip install Pillow
+pip install fastapi uvicorn python-multipart Pillow
 ```
 
 ## 🔧 Uso
-1. Coloca tu imagen en la carpeta `entrada/` (por defecto busca `1.jpg`, configurable en el script).
-2. Ejecuta el script:
+### Opción A: Scripts Automáticos (Windows)
+1. Haz doble clic en **`iniciar_servidor.bat`**.
+2. Se abrirá el navegador automáticamente en `http://localhost:8000`.
+3. Sube tu imagen, ajusta los cuadros de colores y dale a "Procesar".
 
+### Opción B: Manual
+1. Abre una terminal en la carpeta del proyecto.
+2. Ejecuta el servidor:
 ```bash
-python retoque_imagen.py
+python -m uvicorn backend.main:app --reload
 ```
+3. Ve a `http://localhost:8000`.
 
-3. Revisa la carpeta `salida/` más reciente para ver el resultado.
+## 📂 Estructura del Proyecto
+- `backend/`: Código Python del servidor y procesamiento de imagen.
+- `frontend/`: Código HTML/JS de la interfaz web.
+- `static/`, `templates/`: Archivos para el servidor web.
+- `entrada/`, `salida/`: Carpetas para pruebas locales manuales (legacy).
 
-## ⚙️ Ajustes
-Puedes modificar las coordenadas de borrado directamente en el archivo `retoque_imagen.py` buscando la sección:
-`# Coordenadas base (Originales 1024x575)`
+## ⚙️ Ajustes Avanzados
+El script de procesamiento base se encuentra en `backend/processing.py`.
 
 ## 👤 Autor
 Gustavo (tavo0132)
