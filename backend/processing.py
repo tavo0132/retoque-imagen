@@ -49,6 +49,37 @@ def procesar_imagen_bytes(imagen_bytes, coords_logo, coords_mask, coords_cielo):
         print(f"Error procesando imagen: {e}")
         return None
 
+
+# --- NUEVA FUNCIÓN: PROCESAMIENTO MASIVO ---
+
+def transformar_imagen(imagen_bytes, formato_salida="WEBP", ancho=None, alto=None, calidad=85):
+    """
+    Recibe imagen en bytes, la redimensiona (si se especifica) y la convierte de formato.
+    Devuelve: (nombre_archivo_sugerido, bytes_imagen_procesada)
+    """
+    try:
+        img = PIL.Image.open(io.BytesIO(imagen_bytes))
+        
+        # 1. Convertir a RGB (necesario si guardamos como JPG, aunque WebP soporta RGBA)
+        if formato_salida.upper() in ["JPG", "JPEG"]:
+            img = img.convert("RGB")
+        
+        # 2. Redimensionar (Resize) de alta calidad
+        if ancho and alto:
+            img = img.resize((ancho, alto), PIL.Image.Resampling.LANCZOS)
+            
+        # 3. Guardar en memoria con el nuevo formato
+        output_buffer = io.BytesIO()
+        img.save(output_buffer, format=formato_salida, quality=calidad, optimize=True)
+        
+        # Generar extensión correcta
+        ext = formato_salida.lower().replace("jpeg", "jpg")
+        return output_buffer.getvalue(), ext
+        
+    except Exception as e:
+        print(f"Error transformando imagen: {e}")
+        return None, None
+
 # --- CÓDIGO LEGACY PARA TERMINAL (Solo si se ejecuta directo) ---
 if __name__ == "__main__":
     # Rutas de archivos ajustadas a la estructura del proyecto

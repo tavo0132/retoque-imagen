@@ -19,8 +19,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import json
 import uvicorn
 import io
-# Ajustamos la importación relativa según la estructura de paquetes
-from .processing import procesar_imagen_bytes
+import zipfile
+from fastapi.responses import JSONResponse
+from typing import List
+
+# Ajustamos la importaciÃ³n relativa segÃºn la estructura de paquetes
+from .processing import procesar_imagen_bytes, transformar_imagen
 
 app = FastAPI()
 
@@ -37,10 +41,67 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
-async def read_root():
+def read_root(): # Eliminamos async innecesario para lectura directa de archivo
     # Servir el HTML principal
     with open("frontend/index.html", "r", encoding="utf-8") as f:
         return Response(content=f.read(), media_type="text/html")
+
+@app.post("/procesar-galeria")
+async def procesar_galeria(
+    files: List[UploadFile] = File(...),
+    tipo_salida: str = Form("thumb"), # "thumb" (370x250) | "big" (741x521)
+    formato: str = Form("WEBP")       # WEBP | PNG | JPEG
+):
+    """
+    Recibe múltiples imágenes, las redimensiona según el tipo (thumb/big) 
+    y las devuelve comprimidas en un ZIP.
+    Simula la estructura de carpetas de tu web.
+    """
+    try:
+        # Definir dimensiones según la plantilla
+        if tipo_salida == "thumb":
+            ANCHO, ALTO = 370, 250
+        elif tipo_salida == "big":
+            ANCHO, ALTO = 741, 521
+        else:
+            return JSONResponse({"error": "Tipo de salida no válido"}, status_code=400)
+        
+        # Buffer en memoria para el ZIP resultante
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for file in files:
+                contenido = await file.read()
+                
+                # Procesar imagen individual
+                img_bytes, ext = transformar_imagen(
+                    contenido, 
+                    formato_salida=formato, 
+                    ancho=ANCHO, 
+                    alto=ALTO
+                )
+                
+                if img_bytes:
+                    # Crear nombre: "foto1.jpg" -> "foto1.webp"
+                    # Usamos rsplit para quitar la extensión original de forma segura
+                    nombre_base = file.filename.rsplit('.', 1)[0]
+                    nombre_final = f"{nombre_base}.{ext}"
+                    
+                    # Añadir al ZIP
+                    zip_file.writestr(nombre_final, img_bytes)
+        
+        # Preparar respuesta como descarga de archivo
+        zip_buffer.seek(0)
+        
+        # Limpiar headers para evitar errores de codificación
+        filename = f"galeria_{tipo_salida}.zip"
+        headers = {
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+        return Response(content=zip_buffer.getvalue(), media_type="application/zip", headers=headers)
+
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.post("/procesar")
 async def procesar(

@@ -20,22 +20,21 @@ Proyecto automatizado y visual para la **eliminación de logos y marcas de agua*
         - Endpoint `/procesar` (POST): Recibe imagen y coordenadas, llama al procesador y devuelve la imagen limpia.
         - **Compatibilidad**: Incluye parche para `pydantic` en Python 3.14 (Beta).
     - **`processing.py`**: Lógica de imagen pura (Pillow).
-        - Función `procesar_imagen_bytes()`: Recibe bytes y coordenadas, devuelve bytes procesados.
+        - Función `procesar_imagen_bytes()`: Retoque individual.
+        - Función `transformar_imagen()`: Procesamiento masivo (formato/resize).
         - No depende del sistema de archivos, trabaja en memoria.
 
 3. **Scripts de Utilidad**:
     - `iniciar_servidor.bat`: Lanza el servidor en `0.0.0.0:8000`.
     - `detener_servidor.bat`: Mata procesos en el puerto 8000.
 
-## 🚀 Estado Actual (12-03-2026)
-- **Funcionalidad Completa**: La aplicación web permite subir, ajustar áreas y descargar la imagen procesada.
-- **Repositorio**: Estructura reorganizada (`backend/`, `frontend/`).
-- **Problemas Conocidos y Resueltos**:
-    - **Python 3.14**: Se aplicó un *shim* en `main.py` para corregir incompatibilidad de `typing._eval_type` con `pydantic`.
-    - **CORS/Puertos**: Configurado para escuchar en `0.0.0.0` y permitir acceso local.
+## 🚀 Estado Actual (16-03-2026)
+- **Fase 1 (Completada)**: Backend implementado con endpoint `/procesar-galeria` para conversión masiva a WebP/PNG y redimensionado (Thumb 370px, Big 741px).
+- **Fase 2 (Completada)**: Interfaz `index.html` actualizada con sistema de pestañas ("Retoque" vs "Galería Masiva").
+- **Repositorio**: Sincronizado urgentemente ante posible fallo eléctrico.
 
 ## 🔗 Stack Tecnológico
 - **Python**: 3.14 (Beta)
 - **Web Framework**: FastAPI + Uvicorn
-- **Imagen**: Pillow (PIL)
+- **Imagen**: Pillow (PIL) + pillow-avif-plugin
 - **Frontend**: Fabric.js (Canvas Interactivo)

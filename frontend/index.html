@@ -3,42 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retoque de Imagen IA</title>
+    <title>Suite de Imágenes IA</title>
     <!-- Fabric.js para el canvas interactivo -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; }
+        
+        /* Estilos de Pestañas */
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; background: #f1f1f1; margin-right: 5px; border-radius: 5px 5px 0 0; }
+        .tab.active { background: #3498db; color: white; font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
         .container { display: flex; gap: 20px; }
-        .canvas-area { border: 2px solid #ccc; width: 600px; height: 400px; position: relative; }
-        .preview-area { border: 2px solid #333; width: 600px; height: 400px; }
+        .canvas-area { border: 2px solid #ccc; width: 600px; height: 400px; position: relative; background: #fafafa; }
+        .preview-area { border: 2px solid #333; width: 500px; height: 400px; display: flex; align-items: center; justify-content: center; background: #eee; }
         img.result { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        /* Estilos para el formulario masivo */
+        .upload-zone { border: 2px dashed #999; padding: 40px; text-align: center; cursor: pointer; background: #f9f9f9; width: 50%; margin: 20px auto; }
+        .upload-zone:hover { background: #eef; border-color: #3498db; }
+        .btn-primary { background: #27ae60; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; border-radius: 4px; }
+        .btn-primary:hover { background: #219150; }
+        .thumbnails { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .thumb { width: 80px; height: 80px; object-fit: cover; border: 1px solid #ccc; }
     </style>
 </head>
 <body>
-    <h1>Retoque de Imagen interactivo</h1>
+    <h1>Suite de Imágenes IA</h1>
     
-    <input type="file" id="fileInput" accept="image/*">
-    <button onclick="procesarImagen()">Procesar Imagen</button>
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('retoque')">🖌️ Retoque Mágico</div>
+        <div class="tab" onclick="switchTab('galeria')">⚙️ Galería Masiva</div>
+    </div>
     
-    <div class="container">
-        <!-- Canvas Interactivo -->
-        <div>
-            <h3>1. Configura las áreas (Arrastra los cuadros)</h3>
-            <canvas id="c"></canvas>
-            <p>🔴 Rojo: Logo (Referencia) | 🔵 Azul: Máscara (Borrador) | 🟢 Verde: Cielo (Clon)</p>
+    <!-- PESTAÑA 1: RETOQUE ORIGINAL -->
+    <div id="retoque" class="tab-content active">
+        <div style="margin-bottom: 15px;">
+            <input type="file" id="fileInput" accept="image/*">
+            <button onclick="procesarImagen()">Procesar Imagen</button>
         </div>
         
-        <!-- Previsualización -->
-        <div>
-            <h3>2. Resultado</h3>
-            <div class="preview-area" id="resultContainer">
-                <p>La imagen procesada aparecerá aquí...</p>
+        <div class="container">
+            <!-- Canvas Interactivo -->
+            <div>
+                <h3>1. Configura las áreas (Arrastra los cuadros)</h3>
+                <div class="canvas-area">
+                    <canvas id="c"></canvas>
+                </div>
+                <p>🔴 Rojo: Logo (Referencia) | 🔵 Azul: Máscara (Borrador) | 🟢 Verde: Cielo (Clon)</p>
+            </div>
+            
+            <!-- Previsualización -->
+            <div>
+                <h3>2. Resultado</h3>
+                <div class="preview-area" id="resultContainer">
+                    <p>La imagen procesada aparecerá aquí...</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- PESTAÑA 2: GALERÍA MASIVA (NUEVO) -->
+    <div id="galeria" class="tab-content">
+        <h2>Optimizador de Galería Web</h2>
+        <p>Convierte y redimensiona múltiples imágenes a la vez para tu sitio web.</p>
+        
+        <form id="massForm" style="text-align: center;">
+            <div class="upload-zone" onclick="document.getElementById('massInput').click()">
+                <p>📂 Haz clic para seleccionar tus imágenes (.jpg, .png)</p>
+                <input type="file" id="massInput" multiple accept="image/*" style="display: none" onchange="previewFiles(this)">
+            </div>
+            
+            <div id="previewThumbs" class="thumbnails" style="justify-content: center; margin-bottom: 20px;"></div>
+            
+            <div style="margin-bottom: 20px;">
+                <label>Formato de Salida:</label>
+                <select id="formatoSalida">
+                    <option value="WEBP">WebP (Recomendado Google)</option>
+                    <option value="PNG">PNG (Transparencia)</option>
+                    <option value="JPEG">JPG (Fotos)</option>
+                </select>
+                
+                <span style="margin: 0 15px;">|</span>
+                
+                <label>Tamaño:</label>
+                <select id="tipoSalida">
+                    <option value="thumb">Miniatura (370x250 px)</option>
+                    <option value="big">Grande (741x521 px)</option>
+                </select>
+            </div>
+            
+            <button type="button" class="btn-primary" onclick="procesarLote()">🚀 Procesar y Descargar ZIP</button>
+        </form>
+        <p id="statusMsg" style="text-align: center; color: #666;"></p>
+    </div>
+
     <script>
+        // --- LÓGICA DE PESTAÑAS ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // --- LÓGICA DE GALERÍA MASIVA ---
+        function previewFiles(input) {
+            const container = document.getElementById('previewThumbs');
+            container.innerHTML = '';
+            if (input.files) {
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'thumb';
+                        container.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                });
+                document.getElementById('statusMsg').innerText = `${input.files.length} imágenes seleccionadas.`;
+            }
+        }
+
+        async function procesarLote() {
+            const input = document.getElementById('massInput');
+            if (!input.files || input.files.length === 0) {
+                alert("Selecciona al menos una imagen.");
+                return;
+            }
+
+            const formData = new FormData();
+            for (let i = 0; i < input.files.length; i++) {
+                formData.append('files', input.files[i]);
+            }
+            formData.append('tipo_salida', document.getElementById('tipoSalida').value);
+            formData.append('formato', document.getElementById('formatoSalida').value);
+
+            const msg = document.getElementById('statusMsg');
+            msg.innerText = "⏳ Procesando... Por favor espera.";
+
+            try {
+                const response = await fetch('/procesar-galeria', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "galeria_optimizada.zip";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    msg.innerText = "✅ ¡Listo! Descarga iniciada.";
+                } else {
+                    const err = await response.json();
+                    msg.innerText = "❌ Error: " + (err.error || "Desconocido");
+                }
+            } catch (error) {
+                console.error(error);
+                msg.innerText = "❌ Error de conexión.";
+            }
+        }
+
+        // --- LÓGICA ORIGINAL (Canvas) ---
         const canvas = new fabric.Canvas('c', { selection: false });
+        // ... (Resto del código JS anterior se mantiene igual) ...
+
         // Dimensiones iniciales del lienzo, se ajustarán al cargar imagen
         canvas.setWidth(600);
         canvas.setHeight(400);
