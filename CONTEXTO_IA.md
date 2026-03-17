@@ -29,9 +29,9 @@ Proyecto automatizado y visual para la **eliminación de logos y marcas de agua*
     - `detener_servidor.bat`: Mata procesos en el puerto 8000.
 
 ## 🚀 Estado Actual (16-03-2026)
-- **Fase 1 (Completada)**: Backend implementado con endpoint `/procesar-galeria` para conversión masiva a WebP/PNG y redimensionado (Thumb 370px, Big 741px).
+- **Fase 1 (Completada)**: Backend implementado con endpoint `/procesar-galeria` para conversión masiva a WebP/PNG y redimensionado (Thumb 370x250, Big 741x521).
 - **Fase 2 (Completada)**: Interfaz `index.html` actualizada con sistema de pestañas ("Retoque" vs "Galería Masiva").
-- **Repositorio**: Sincronizado urgentemente ante posible fallo eléctrico.
+- **Validación**: Funcionalidad de "Galería Masiva" probada y aprobada por el usuario. La generación de archivos ZIP con carpetas `thumb/` y `big/` es correcta.
 
 ## 🔗 Stack Tecnológico
 - **Python**: 3.14 (Beta)

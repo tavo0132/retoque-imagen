@@ -1,6 +1,9 @@
-# Retoque de Imagen con Python + Web 🖼️
+# Retoque de Imagen con Python + Web 🖼️ V1.1
 
 Aplicación web interactiva y modular para procesar imágenes con IA y Python. Incluye herramientas de retoque individual y procesamiento masivo para galerías web.
+
+- **Última Versión (1.1)**: Agregada funcionalidad "Galería Masiva" para conversión y resize por lotes (WebP/PNG).
+- **Estado**: Estable y Probado.
 
 ## 🚀 Características
 ### 1. 🖌️ Retoque Mágico (Individual)
@@ -12,7 +15,7 @@ Aplicación web interactiva y modular para procesar imágenes con IA y Python. I
 - **Redimensionado Inteligente**: Genera automáticamente tamaños estándar para web:
     - **Thumb**: 370x250 px
     - **Big**: 741x521 px
-- **Descarga en ZIP**: Recibe todas las imágenes procesadas en un archivo comprimido.
+- **Descarga en ZIP**: Recibe todas las imágenes procesadas y organizadas en carpetas (`thumb`, `big`).
 
 ## 📋 Requisitos
 - Python 3.x
